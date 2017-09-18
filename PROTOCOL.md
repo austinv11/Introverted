@@ -46,54 +46,54 @@ These are ops which are platform agnostic and guaranteed to always be implemente
 These are data types which are platform agnostic and guaranteed to always be implemented.
 All data types are *big endian* and are prefixed with a single byte denoting the data type.
 
-###Boolean
+### Boolean
 The boolean is data type `0`, it is then followed by a single flag byte in the range 0-1.
 When the flag is `0`, the data is represented as `false` and when the flag is `1`, the 
 data is represented as `true`. 
 
-###UInt (unsigned int)
+### UInt (unsigned int)
 The uint is data type `1`, it is then followed by 4 bytes representing the data.
 
-###Int (signed int)
+### Int (signed int)
 The int is data type `2`, it is then followed by 4 bytes representing the data.
 
-###ULong (unsigned long)
+### ULong (unsigned long)
 The ulong is data type `3`, it is then followed by 8 bytes representing the data.
 
-###Long (signed long)
+### Long (signed long)
 The long is data type `4`, it is then followed by 8 bytes representing the data.
 
-###Char
+### Char
 The char is data type `5`, it is then followed by 4 bytes representing the data.
 
-###Decimal
+### Decimal
 The decimal is data type `6`, it is then followed by bytes which correspond to the 
 IEEE 754 floating-point "double format".
 
-###Array
+### Array
 The array is data type `7`, it is then followed by 4 bytes representing the amount of
 elements contained, then an indefinite amount of bytes are reserved for reading the array
 elements until the number of elements reported is reached.
 
-###Str (string)
+### Str (string)
 The string is data type `8`. It acts like a char array, except the character data type is
 implied so the next 4 bytes represents the amount of bytes for characters, followed by 
 the actual byte data for the UTF-8 encoding.
 
-###Nil
+### Nil
 The nil is data type `9`. It has no other data, this represents an existant value that is
 simply empty.
 
-###Map
+### Map
 The map is data type `10`, it is then followed by 4 bytes representing its length, from 
 there it must read 2 * map length to get all the values where all evenly indexed objects
 (including 0) is a key and the next odd indexed object is the corresponding value.
 
-##JVM Platform
+## JVM Platform
 The JVM is the platform which is the primary target of the introverted library, and as
 such it has many JVM-specific ops.
 
-###JVM platform implementations
+### JVM platform implementations
 The JVM server metadata should be in the form `JVM-{light/heavy}/{Protocol version}`.
 
 The platform `JVM-light` represents the server implementation written fully in Java 
