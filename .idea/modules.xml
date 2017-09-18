@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Introverted.iml" filepath="$PROJECT_DIR$/.idea/modules/Introverted.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Introverted_main.iml" filepath="$PROJECT_DIR$/.idea/modules/Introverted_main.iml" group="Introverted" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Introverted_test.iml" filepath="$PROJECT_DIR$/.idea/modules/Introverted_test.iml" group="Introverted" />
+    </modules>
+  </component>
+</project>
