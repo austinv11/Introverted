@@ -7,8 +7,9 @@ breaking support for standard clients.
 ## General network format
 All packets are prefixed with the current version number (1 byte). This allows for data 
 compatibility verification. Next is an opcode (1 byte), this can either be a cross platform
-reserved protocol op or it can be a platform specific opcode. After the op code is the 
-payload which is dependent on the op type.
+reserved protocol op or it can be a platform specific opcode. After the op code is  a 4 byte 
+length header which represents an integer describing the length of the raw payload. And
+the final bytes represent the payload which is dependent on the op type.
 
 ## Network flow
 A client can search for running servers by sending a `DISCOVERY` op to all ports and waiting

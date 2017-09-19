@@ -13,7 +13,7 @@ import java.util.Map;
  */
 public class PacketBuffer {
 
-    private static final int INITIAL_SIZE = 4;
+    private static final int INITIAL_SIZE = 16;
     private static final int SIZE_EXPANSION_FACTOR = 2;
 
     private static final byte BOOLEAN = 0;
@@ -51,6 +51,9 @@ public class PacketBuffer {
     }
 
     private synchronized void safePut(byte... bytes) {
+        if (pointer > 1 && pointer < 6) //We wanna skip the size bytes as that has its own mechanism
+            skipMeta();
+
         while (size() + bytes.length > buf.length)
             expand();
 
@@ -82,8 +85,8 @@ public class PacketBuffer {
     }
 
     private synchronized void skipMeta() {
-        if (pointer < 2)
-            pointer = 2;
+        if (pointer < 6)
+            pointer = 6;
     }
 
     private void assertByte(byte shouldEqual) {
@@ -436,17 +439,26 @@ public class PacketBuffer {
     }
 
     public int size() {
-        return pointer + 1;
+        return pointer;
     }
 
     public void reset() {
         movePointer(0);
     }
 
+    private void updateSize() {
+        int size = pointer - 6; //Ignore metadata in the size
+        buf[2] = (byte) (size >> 24);
+        buf[3] = (byte) ((size >> 16) & MASK);
+        buf[4] = (byte) ((size >> 8) & MASK);
+        buf[5] = (byte) (size & MASK);
+    }
+
     public byte[] flush() {
+        updateSize();
         //Don't need to worry about zeroing, the data will be overwritten eventually.
         byte[] toReturn = Arrays.copyOfRange(buf, 0, pointer);
-        pointer = 0;
+        reset();
         return toReturn;
     }
 }

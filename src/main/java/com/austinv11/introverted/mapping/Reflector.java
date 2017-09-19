@@ -33,8 +33,12 @@ public interface Reflector {
         try {
             return clazz.getDeclaredField(name);
         } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-            return null;
+            try {
+                return clazz.getField(name);
+            } catch (NoSuchFieldException e1) {
+                e1.printStackTrace();
+                return null;
+            }
         }
     }
 
