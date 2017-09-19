@@ -1,6 +1,7 @@
 package com.austinv11.introverted.networking;
 
 import com.austinv11.introverted.common.Introverted;
+import org.apache.commons.lang3.ClassUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
@@ -360,7 +361,7 @@ public class PacketBuffer {
     public PacketBuffer put(Object object, boolean preferUnsigned) {
         if (object == null)
             putNil();
-        else if (object.getClass().isPrimitive()) {
+        else if (ClassUtils.isPrimitiveOrWrapper(object.getClass())) {
             if (object.getClass().equals(Void.class))
                 putNil();
             else if (object.getClass().equals(Byte.class)) {

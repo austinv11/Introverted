@@ -15,7 +15,7 @@ the final bytes represent the payload which is dependent on the op type.
 A client can search for running servers by sending a `DISCOVERY` op to all ports and waiting
 for a `DISCOVERY_CONFIRM` op in return to signal that there is a running server in the 
 specified port. `DISCOVERY_CONFIRM` should contain a string payload representing some
-metadata about the server. It should be in the format `{Platform identifier}/{Protocol version}`.
+metadata about the server. It should be in the format `{Platform identifier}`.
 Once a client decides to connect to the server, it should send a `HANDSHAKE` op.The server
 can then either refuse the connection attempt via `HANDSHAKE_REFUSE` (along with a reason
 string) or it can accept the connection via `HANDSHAKE_CONFIRM`. From here any platform
@@ -95,7 +95,7 @@ The JVM is the platform which is the primary target of the introverted library, 
 such it has many JVM-specific ops.
 
 ### JVM platform implementations
-The JVM server metadata should be in the form `JVM-{light/heavy}/{Protocol version}`.
+The JVM server metadata should be in the form `JVM-{light/heavy}`.
 
 The platform `JVM-light` represents the server implementation written fully in Java 
 which contains a limited selection of available ops.

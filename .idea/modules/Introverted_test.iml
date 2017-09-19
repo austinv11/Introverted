@@ -11,6 +11,7 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="Introverted_main" />
     <orderEntry type="library" name="Gradle: com.github.jnr:jnr-unixsocket:0.18" level="project" />
+    <orderEntry type="library" name="Gradle: org.apache.commons:commons-lang3:3.6" level="project" />
     <orderEntry type="library" name="Gradle: junit:junit:4.12" level="project" />
     <orderEntry type="library" name="Gradle: com.github.jnr:jnr-ffi:2.1.4" level="project" />
     <orderEntry type="library" name="Gradle: com.github.jnr:jnr-constants:0.9.8" level="project" />
