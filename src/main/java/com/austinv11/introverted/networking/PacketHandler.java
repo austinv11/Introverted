@@ -3,11 +3,12 @@ package com.austinv11.introverted.networking;
 import com.austinv11.introverted.networking.packets.PingPacket;
 import com.austinv11.introverted.networking.packets.PongPacket;
 
+import java.io.Closeable;
 import java.util.concurrent.SynchronousQueue;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public interface PacketHandler {
+public interface PacketHandler extends Closeable {
 
     void send(Packet packet);
 
@@ -57,4 +58,6 @@ public interface PacketHandler {
         PongPacket pongPacket = (PongPacket) waitFor(packet -> packet.getType() == PacketType.PONG && ((PongPacket) packet).getIdentifier() == pingPacket.getIdentifier());
         return System.currentTimeMillis() - pingPacket.getSendTime();
     }
+
+    boolean isClosed();
 }

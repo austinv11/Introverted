@@ -8,6 +8,7 @@ import com.austinv11.introverted.networking.SocketFactory;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
@@ -15,6 +16,8 @@ public class IntrovertedClient implements PacketHandler {
 
     private final List<Consumer<Packet>> consumers = new CopyOnWriteArrayList<>();
     private final PacketSocket socket;
+    private final ExecutorService readService = Executors.newSingleThreadExecutor();
+    private volatile boolean isClosed = false;
 
     public IntrovertedClient(int serverPort) {
         socket = PacketSocket.wrap(SocketFactory.newTCPSocket(serverPort));
@@ -27,13 +30,14 @@ public class IntrovertedClient implements PacketHandler {
     }
 
     private void _completeInit() {
-        Executors.newSingleThreadExecutor().execute(() -> {
-            while (true) {
+        readService.execute(() -> {
+            while (!isClosed()) {
                 try {
                     Packet packet = socket.getInputStream().read();
                     consumers.forEach(consumer -> consumer.accept(packet));
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    if (!isClosed())
+                        e.printStackTrace();
                 }
             }
         });
@@ -53,5 +57,17 @@ public class IntrovertedClient implements PacketHandler {
     @Override
     public void unregisterPacketConsumer(Consumer<Packet> packetConsumer) {
         consumers.remove(packetConsumer);
+    }
+
+    @Override
+    public boolean isClosed() {
+        return isClosed;
+    }
+
+    @Override
+    public void close() throws IOException {
+        isClosed = true;
+        readService.shutdownNow();
+        socket.close();
     }
 }

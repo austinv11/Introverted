@@ -26,7 +26,7 @@ public class PacketOutputStream implements Closeable, Flushable {
 
     @Override
     public void close() throws IOException {
-        flush();
+//        flush(); don't wanna flush us because incomplete packets may be send down the wire
         backing.close();
     }
 
