@@ -46,6 +46,6 @@ public class PacketOutputStream implements Closeable, Flushable {
             buf.putOp(packet.getType());
 
         for (Field field : fields)
-            buf.put(Reflector.instance().get(packet.getClass(), packet, field.getName()));
+            buf.put(Reflector.instance().get(packet.getClass(), packet, field.getName()), field.getAnnotation(Serialized.class).unsigned());
     }
 }

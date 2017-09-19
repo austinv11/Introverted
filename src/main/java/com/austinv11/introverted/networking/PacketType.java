@@ -1,8 +1,12 @@
 package com.austinv11.introverted.networking;
 
+import com.austinv11.introverted.networking.packets.*;
+
 public enum PacketType {
     //Reserved ops
-    DISCOVERY(clazz), DISCOVERY_CONFIRM(clazz), HANDSHAKE(clazz), HANDSHAKE_CONFIRM(clazz), HANDSHAKE_REFUSE(clazz), PING(clazz), PONG(clazz), CONNECTION_KILLED(clazz);
+    DISCOVERY(DiscoveryPacket.class), DISCOVERY_CONFIRM(DiscoveryConfirmPacket.class), HANDSHAKE(HandshakePacket.class),
+    HANDSHAKE_CONFIRM(HandshakeConfirmPacket.class), HANDSHAKE_REFUSE(HandshakeRefusePacket.class),
+    PING(PingPacket.class), PONG(PongPacket.class), CONNECTION_KILLED(ConnectionKilledPacket.class);
 
     final Class<? extends Packet> clazz;
 

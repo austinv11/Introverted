@@ -37,15 +37,21 @@ public class IntrovertedClient implements PacketHandler {
                 }
             }
         });
+        handle(new ClientBasePacketConsumer(this));
     }
 
     @Override
-    public void send(Packet packet) {
+    public synchronized void send(Packet packet) {
         socket.getOutputStream().write(packet);
     }
 
     @Override
     public void handle(Consumer<Packet> packetConsumer) {
         consumers.add(packetConsumer);
+    }
+
+    @Override
+    public void unregisterPacketConsumer(Consumer<Packet> packetConsumer) {
+        consumers.remove(packetConsumer);
     }
 }

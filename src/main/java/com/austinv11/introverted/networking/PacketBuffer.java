@@ -354,17 +354,34 @@ public class PacketBuffer {
     }
 
     public PacketBuffer put(Object object) {
+        return put(object, false);
+    }
+
+    public PacketBuffer put(Object object, boolean preferUnsigned) {
         if (object == null)
             putNil();
         else if (object.getClass().isPrimitive()) {
             if (object.getClass().equals(Void.class))
                 putNil();
-            else if (object.getClass().equals(Byte.class))
-                putInt((Byte) object);
+            else if (object.getClass().equals(Byte.class)) {
+                if (preferUnsigned) {
+                    putUInt((Byte) object);
+                } else {
+                    putInt((Byte) object);
+                }
+            }
             else if (object.getClass().equals(Short.class))
-                putInt((Short) object);
+                if (preferUnsigned) {
+                    putUInt((Short) object);
+                } else {
+                    putInt((Short) object);
+                }
             else if (object.getClass().equals(Integer.class))
-                putInt((Integer) object);
+                if (preferUnsigned) {
+                    putUInt((Integer) object);
+                } else {
+                    putInt((Integer) object);
+                }
             else if (object.getClass().equals(Float.class))
                 putDecimal((Float) object);
             else if (object.getClass().equals(Double.class))
@@ -374,7 +391,11 @@ public class PacketBuffer {
             else if (object.getClass().equals(Boolean.class))
                 putBoolean((Boolean) object);
             else if (object.getClass().equals(Long.class))
-                putLong((Long) object);
+                if (preferUnsigned) {
+                    putULong((Long) object);
+                } else {
+                    putLong((Long) object);
+                }
             else {
                 throw new IllegalArgumentException(String.format("Cannot serialize type %s!", object.getClass()));
             }
