@@ -3,6 +3,7 @@ package com.austinv11.introverted.networking;
 import jnr.ffi.Platform;
 import jnr.unixsocket.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.ServerSocket;
@@ -36,7 +37,9 @@ public class SocketFactory {
 
     public static UnixSocket newUnixSocket(String address) {
         try {
-            return UnixSocketChannel.open(new UnixSocketAddress(address)).socket();
+            File file = new File(address);
+            file.deleteOnExit();
+            return UnixSocketChannel.open(new UnixSocketAddress(file)).socket();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -48,8 +51,10 @@ public class SocketFactory {
 
     public static UnixServerSocket newUnixServerSocket(String address) {
         try {
+            File file = new File(address);
+            file.deleteOnExit();
             UnixServerSocket socket = UnixServerSocketChannel.open().socket();
-            socket.bind(new UnixSocketAddress(address));
+            socket.bind(new UnixSocketAddress(file));
             return socket;
         } catch (IOException e) {
             throw new RuntimeException(e);
