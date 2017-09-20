@@ -30,9 +30,15 @@ class TCPPacketServerSocket implements PacketServerSocket {
     @Override
     public PacketSocket accept() {
         try {
+            if (tcp.isClosed())
+                return null;
+
             return PacketSocket.wrap(tcp.accept());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            if (!tcp.isClosed())
+                throw new RuntimeException(e);
+            else
+                return null;
         }
     }
 

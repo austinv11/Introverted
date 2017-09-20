@@ -10,6 +10,7 @@ public class PingPongTest {
 
     @Test
     public void test() throws IOException {
+        //Use introverted over tcp to ensure cross platform compat
         IntrovertedServer server = new IntrovertedServer(1337);
         IntrovertedClient client = new IntrovertedClient(1337);
 

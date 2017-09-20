@@ -35,17 +35,19 @@ public class IntrovertedServer implements PacketHandler {
         connectionService.execute(() -> {
             while (!isClosed()) {
                 PacketSocket socket = serverSocket.accept();
-                ExecutorService readService = Executors.newSingleThreadExecutor();
-                connections.put(socket, readService);
-                readService.execute(() -> {
-                    try {
-                        while (!isClosed()) {
-                            Packet packet = socket.getInputStream().read();
-                            consumers.forEach(consumer -> consumer.accept(packet));
-                        }
-                    } catch (IOException e) {
-                        if (!isClosed())
-                            e.printStackTrace();
+                if (socket != null) { //Ignore null sockets as they are likely due to socket closures
+                    ExecutorService readService = Executors.newSingleThreadExecutor();
+                    connections.put(socket, readService);
+                    readService.execute(() -> {
+                        try {
+                            while (!isClosed()) {
+                                Packet packet = socket.getInputStream().read();
+                                if (packet != null) //Ignore null packets as they are likely due to the stream being terminated
+                                    consumers.forEach(consumer -> consumer.accept(packet));
+                            }
+                        } catch (IOException e) {
+                            if (!isClosed())
+                                e.printStackTrace();
 //                    } finally { TODO re-implement
 //                        if (!isClosed()) {
 //                            try {
@@ -55,8 +57,9 @@ public class IntrovertedServer implements PacketHandler {
 //                            }
 //                            connections.remove(socket);
 //                        }
-                    }
-                });
+                        }
+                    });
+                }
             }
         });
         handle(new ServerBasePacketConsumer(this));

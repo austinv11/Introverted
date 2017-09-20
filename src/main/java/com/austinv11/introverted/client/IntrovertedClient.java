@@ -34,7 +34,8 @@ public class IntrovertedClient implements PacketHandler {
             while (!isClosed()) {
                 try {
                     Packet packet = socket.getInputStream().read();
-                    consumers.forEach(consumer -> consumer.accept(packet));
+                    if (packet != null) //Ignore null packets as they are likely due to the stream being terminated
+                        consumers.forEach(consumer -> consumer.accept(packet));
                 } catch (IOException e) {
                     if (!isClosed())
                         e.printStackTrace();

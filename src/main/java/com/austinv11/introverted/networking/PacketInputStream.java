@@ -22,6 +22,9 @@ public class PacketInputStream implements Closeable {
         byte[] buffer = new byte[BUFFER_SIZE];
         int len = backing.read(buffer, 0, 6);
 
+        if (len == -1) //Stream terminated
+            return null;
+
         if (len != 5)
             throw new IOException("Unable to decode packet!");
 
