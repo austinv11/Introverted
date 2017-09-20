@@ -5,6 +5,7 @@ import com.austinv11.introverted.networking.packets.PongPacket;
 
 import java.io.Closeable;
 import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -36,6 +37,14 @@ public interface PacketHandler extends Closeable {
     }
 
     default Packet waitFor(Predicate<Packet> packetPredicate) {
+        try {
+            return waitFor(packetPredicate, -1, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            return null; //Should never happen
+        }
+    }
+
+    default Packet waitFor(Predicate<Packet> packetPredicate, long timeout, TimeUnit timeoutUnit) throws InterruptedException {
         SynchronousQueue<Packet> result = new SynchronousQueue<>();
         temporarilyHandle(p -> {
             if (packetPredicate.test(p)) {
@@ -45,11 +54,19 @@ public interface PacketHandler extends Closeable {
                 return false;
             }
         });
-        return result.poll();
+        return timeout < 0 ? result.poll() : result.poll(timeout, timeoutUnit);
+    }
+
+    default <T extends Packet> T waitForNext(PacketType type, long timeout, TimeUnit timeoutUnit) throws InterruptedException {
+        return (T) waitFor(p -> p.getType() == type, timeout, timeoutUnit);
     }
 
     default <T extends Packet> T waitForNext(PacketType type) {
-        return (T) waitFor(p -> p.getType() == type);
+        try {
+            return waitForNext(type, -1, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            return null; //This should never happen
+        }
     }
 
     default long pollPing() {

@@ -2,14 +2,14 @@ package com.austinv11.introverted.networking;
 
 public abstract class Packet {
 
-    private final int version;
+    private final byte version;
     private final PacketType type;
 
     public Packet() {
-        this(-1, null);
+        this((byte) 0, null);
     }
 
-    public Packet(int version, PacketType type) {
+    public Packet(byte version, PacketType type) {
         this.version = version;
         this.type = type;
     }

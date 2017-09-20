@@ -1,5 +1,7 @@
 package com.austinv11.introverted.mapping;
 
+import com.austinv11.introverted.networking.Packet;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -30,16 +32,20 @@ public interface Reflector {
     }
 
     default Field getField(Class<?> clazz, String name) {
-        try {
-            return clazz.getDeclaredField(name);
-        } catch (NoSuchFieldException e) {
+        while (!clazz.equals(Object.class)) {
             try {
-                return clazz.getField(name);
-            } catch (NoSuchFieldException e1) {
-                e1.printStackTrace();
-                return null;
+                return clazz.getDeclaredField(name);
+            } catch (NoSuchFieldException e) {
+                try {
+                    return clazz.getField(name);
+                } catch (NoSuchFieldException e1) {
+                } finally {
+                    clazz = clazz.getSuperclass();
+                }
             }
         }
+
+        return null;
     }
 
     <T> void put(Class<?> clazz, Object obj, String name, T value);

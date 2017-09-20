@@ -15,6 +15,8 @@ import java.util.function.Consumer;
 
 public class IntrovertedServer implements PacketHandler {
 
+    public static final String JVM_LIGHT_PLATFORM = "JVM-light";
+
     private final PacketServerSocket serverSocket;
     private final List<Consumer<Packet>> consumers = new CopyOnWriteArrayList<>();
     private final ExecutorService connectionService = Executors.newSingleThreadExecutor();
@@ -39,25 +41,39 @@ public class IntrovertedServer implements PacketHandler {
                     ExecutorService readService = Executors.newSingleThreadExecutor();
                     connections.put(socket, readService);
                     readService.execute(() -> {
-                        try {
                             while (!isClosed()) {
-                                Packet packet = socket.getInputStream().read();
-                                if (packet != null) //Ignore null packets as they are likely due to the stream being terminated
-                                    consumers.forEach(consumer -> consumer.accept(packet));
+                                Packet packet = null;
+                                try {
+                                    packet = socket.getInputStream().read();
+                                    if (packet != null) { //Ignore null packets as they are likely due to the stream being terminated
+                                        Packet finalPacket = packet;
+                                        consumers.forEach(consumer -> consumer.accept(finalPacket));
+                                    }
+                                } catch (IOException e) {
+                                    if (!isClosed())
+                                        e.printStackTrace();
+                                } finally {
+                                    if (packet == null) {
+                                        try {
+                                            socket.close();
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                        connections.remove(socket);
+                                        readService.shutdownNow();
+                                        break;
+                                    }
+                                }
+            //                    } finally { TODO re-implement
+            //                        if (!isClosed()) {
+            //                            try {
+            //                                socket.close();
+            //                            } catch (IOException e) {
+            //                                e.printStackTrace();
+            //                            }
+            //                            connections.remove(socket);
+            //                        }
                             }
-                        } catch (IOException e) {
-                            if (!isClosed())
-                                e.printStackTrace();
-//                    } finally { TODO re-implement
-//                        if (!isClosed()) {
-//                            try {
-//                                socket.close();
-//                            } catch (IOException e) {
-//                                e.printStackTrace();
-//                            }
-//                            connections.remove(socket);
-//                        }
-                        }
                     });
                 }
             }
@@ -67,7 +83,14 @@ public class IntrovertedServer implements PacketHandler {
 
     @Override
     public synchronized void send(Packet packet) {
-        connections.keySet().forEach(socket -> socket.getOutputStream().write(packet));
+        connections.keySet().forEach(socket -> {
+            socket.getOutputStream().write(packet);
+            try {
+                socket.getOutputStream().flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     @Override
