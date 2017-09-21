@@ -3,12 +3,15 @@ package com.austinv11.introverted.client;
 import com.austinv11.introverted.networking.*;
 import com.austinv11.introverted.networking.packets.DiscoveryConfirmPacket;
 import com.austinv11.introverted.networking.packets.DiscoveryPacket;
+import com.austinv11.introverted.networking.packets.HandshakePacket;
+import com.austinv11.introverted.networking.packets.HandshakeRefusePacket;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -28,9 +31,8 @@ public class IntrovertedClient implements PacketHandler {
         List<Pair<String, Integer>> foundServers = new ArrayList<>();
         for (int i = lowerBound; i <= upperBound; i++) {
             try (IntrovertedClient tempClient = new IntrovertedClient(i)) {
-                tempClient.send(new DiscoveryPacket());
-                DiscoveryConfirmPacket confirmation
-                        = (DiscoveryConfirmPacket) tempClient.waitFor(packet -> packet.getType() == PacketType.DISCOVERY_CONFIRM, DISCOVERY_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+                DiscoveryConfirmPacket confirmation = (DiscoveryConfirmPacket) tempClient.exchange(new DiscoveryPacket(),
+                        packet -> packet.getType() == PacketType.DISCOVERY_CONFIRM, DISCOVERY_TIMEOUT_MS, TimeUnit.MILLISECONDS);
                 if (confirmation != null)
                     foundServers.add(Pair.of(confirmation.getPlatformIdentifier(), i));
             } catch (Throwable t) {}
@@ -50,8 +52,8 @@ public class IntrovertedClient implements PacketHandler {
             for (String socket : sockets) {
                 try (IntrovertedClient tempClient = new IntrovertedClient(socket)) {
                     tempClient.send(new DiscoveryPacket());
-                    DiscoveryConfirmPacket confirmation
-                            = (DiscoveryConfirmPacket) tempClient.waitFor(packet -> packet.getType() == PacketType.DISCOVERY_CONFIRM, DISCOVERY_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+                    DiscoveryConfirmPacket confirmation = (DiscoveryConfirmPacket) tempClient.exchange(new DiscoveryPacket(),
+                            packet -> packet.getType() == PacketType.DISCOVERY_CONFIRM, DISCOVERY_TIMEOUT_MS, TimeUnit.MILLISECONDS);
                     if (confirmation != null)
                         foundServers.add(Pair.of(confirmation.getPlatformIdentifier(), socket));
                 } catch (Throwable e) {
@@ -86,6 +88,17 @@ public class IntrovertedClient implements PacketHandler {
             }
         });
         handle(new ClientBasePacketConsumer(this));
+    }
+
+    public synchronized Optional<String> handshake() throws InterruptedException {
+        Packet packet = exchange(new HandshakePacket(),
+                p -> p.getType() == PacketType.HANDSHAKE_CONFIRM || p.getType() == PacketType.HANDSHAKE_REFUSE,
+                DISCOVERY_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        if (packet.getType() == PacketType.HANDSHAKE_CONFIRM) {
+            return Optional.empty();
+        } else {
+            return Optional.of(((HandshakeRefusePacket) packet).getReason());
+        }
     }
 
     @Override

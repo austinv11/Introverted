@@ -6,6 +6,7 @@ import com.austinv11.introverted.networking.PacketType;
 import com.austinv11.introverted.networking.packets.PingPacket;
 import com.austinv11.introverted.networking.packets.PongPacket;
 
+import java.io.IOException;
 import java.util.function.Consumer;
 
 public abstract class BasePacketConsumer implements Consumer<Packet> {
@@ -21,6 +22,12 @@ public abstract class BasePacketConsumer implements Consumer<Packet> {
         //Handle common packet handling here
         if (packet.getType() == PacketType.PING)
             handler.send(new PongPacket(((PingPacket) packet).getIdentifier()));
+        else if (packet.getType() == PacketType.CONNECTION_KILLED)
+            try {
+                handler.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         else //Delegate side specific handling here
             handle(packet);
     }
