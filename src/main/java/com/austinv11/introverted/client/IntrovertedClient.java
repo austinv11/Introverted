@@ -46,15 +46,17 @@ public class IntrovertedClient implements PacketHandler {
         File tmpDir = new File("/tmp/");
         String[] sockets = tmpDir.list((dir, name) -> dir.getName().equals("/tmp/") && name.contains("introverted") && name.endsWith(".sock"));
         List<Pair<String, String>> foundServers = new ArrayList<>();
-        for (String socket : sockets) {
-            try (IntrovertedClient tempClient = new IntrovertedClient(socket)) {
-                tempClient.send(new DiscoveryPacket());
-                DiscoveryConfirmPacket confirmation
-                        = (DiscoveryConfirmPacket) tempClient.waitFor(packet -> packet.getType() == PacketType.DISCOVERY_CONFIRM, DISCOVERY_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-                if (confirmation != null)
-                    foundServers.add(Pair.of(confirmation.getPlatformIdentifier(), socket));
-            } catch (Throwable e) {
-                e.printStackTrace();
+        if (sockets != null) {
+            for (String socket : sockets) {
+                try (IntrovertedClient tempClient = new IntrovertedClient(socket)) {
+                    tempClient.send(new DiscoveryPacket());
+                    DiscoveryConfirmPacket confirmation
+                            = (DiscoveryConfirmPacket) tempClient.waitFor(packet -> packet.getType() == PacketType.DISCOVERY_CONFIRM, DISCOVERY_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+                    if (confirmation != null)
+                        foundServers.add(Pair.of(confirmation.getPlatformIdentifier(), socket));
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
             }
         }
         return foundServers;

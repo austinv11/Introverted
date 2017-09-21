@@ -14,7 +14,8 @@ public class DiscoveryTest {
     @Test(timeout = 60 * 1000)
     public void discover() { //This can take some time so we restrict it to search 16 ports
         IntrovertedServer server = new IntrovertedServer(15);
-        List<Pair<String, Integer>> servers = IntrovertedClient.findTCPServers(0, 16);
+        List<Pair<String, Integer>> servers = IntrovertedClient.findTCPServers(1, 16);
         assertEquals(servers.size(), 1);
+        assertEquals(servers.get(0).getLeft(), IntrovertedServer.JVM_LIGHT_PLATFORM);
     }
 }

@@ -31,8 +31,8 @@ public class PacketBuffer {
 
     private static final int MASK = 0xff;
 
-    private byte[] buf;
-    private int pointer = 0;
+    private volatile byte[] buf;
+    private volatile int pointer = 0;
 
     public PacketBuffer(byte[] buf, int startPointer) {
         this.buf = buf;

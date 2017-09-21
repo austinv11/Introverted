@@ -39,7 +39,9 @@ public class PacketInputStream implements Closeable {
             size |= (buffer[5] & 0xff);
         }
 
-        byte[] total = new byte[size+6];
+        size += 6; //Don't forget metadata
+
+        byte[] total = new byte[size];
 
         for (int i = 0; i < 6; i++) //Copy metadata
             total[i] = buffer[i];
@@ -47,8 +49,9 @@ public class PacketInputStream implements Closeable {
         int read = 6;
         while (read < size) {
             int count = backing.read(buffer, 0, Math.min(BUFFER_SIZE, size - read));
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < count; i++) {
                 total[read + i] = buffer[i];
+            }
             read += count;
         }
 
