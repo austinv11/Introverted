@@ -10,16 +10,30 @@ import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.util.List;
 
+/**
+ * This represents a psuedo-OutputStream which can be used to write packets to be sent.
+ */
 public class PacketOutputStream implements Closeable, Flushable {
 
     private final PacketBuffer buf;
     private final OutputStream backing;
 
+    /**
+     * Wraps an output stream and a packet buffer.
+     *
+     * @param buf The buffer to use.
+     * @param backing The stream to write to.
+     */
     public PacketOutputStream(PacketBuffer buf, OutputStream backing) {
         this.buf = buf;
         this.backing = backing;
     }
 
+    /**
+     * Wraps an output stream.
+     *
+     * @param backing The stream to write to.
+     */
     public PacketOutputStream(OutputStream backing) {
         this(new PacketBuffer(), backing);
     }
@@ -36,7 +50,12 @@ public class PacketOutputStream implements Closeable, Flushable {
         backing.flush();
     }
 
-    public <T extends Packet> void write(T packet) {
+    /**
+     * Encodes and transmits a packet through to the other side.
+     *
+     * @param packet The packet to send.
+     */
+    public void write(Packet packet) {
         List<Field> fields = Reflector.instance().getFields(packet.getClass(), Serialized.class);
 
         if (buf.size() == 0)

@@ -34,15 +34,29 @@ public class PacketBuffer {
     private volatile byte[] buf;
     private volatile int pointer = 0;
 
+    /**
+     * Creates a buffer with preset contents and a non-zero pointer.
+     *
+     * @param buf The buffer.
+     * @param startPointer The pointer to start at.
+     */
     public PacketBuffer(byte[] buf, int startPointer) {
         this.buf = buf;
         this.pointer = startPointer;
     }
 
+    /**
+     * Wraps a byte array with a PacketBuffer instance.
+     *
+     * @param buf The buffer to wrap.
+     */
     public PacketBuffer(byte[] buf) {
         this(buf, 0);
     }
 
+    /**
+     * Creates a new PacketBuffer without any contents.
+     */
     public PacketBuffer() {
         this.buf = new byte[INITIAL_SIZE];
     }
@@ -95,43 +109,90 @@ public class PacketBuffer {
             throw new IllegalStateException(String.format("Expected %d at position %d, got %d instead!", shouldEqual, pointer, peek()));
     }
 
+    /**
+     * This injects the value of {@link Introverted#VERSION} onto the buffer.
+     *
+     * @return The current buffer instance.
+     */
     public PacketBuffer putVersion() {
         assertPosition(0);
         safePut(Introverted.VERSION);
         return this;
     }
 
+    /**
+     * This gets the Introverted version value from the buffer.
+     *
+     * @return The version number.
+     */
     public byte getVersion() {
         return peek(0);
     }
 
+    /**
+     * This injects an opcode onto the buffer.
+     *
+     * @param op The opcode to inject.
+     * @return The current buffer instance.
+     */
     public PacketBuffer putOp(PacketType op) {
         assertPosition(1);
         safePut((byte) op.ordinal());
         return this;
     }
 
+    /**
+     * Gets the op represented in the current buffer.
+     *
+     * @return The op stored.
+     */
     public PacketType getOp() {
         return PacketType.values()[peek(1)];
     }
 
+    /**
+     * Appends a boolean onto the buffer.
+     *
+     * @param bool The value to append.
+     * @return The current buffer instance.
+     */
     public PacketBuffer putBoolean(boolean bool) {
         safePut(BOOLEAN, (byte) (bool ? 1 : 0));
         return this;
     }
 
+    /**
+     * Gets the next value on the buffer as a boolean.
+     *
+     * <b>NOTE:</b> This will move the pointer forward if successful.
+     *
+     * @return The value.
+     */
     public boolean getBoolean() {
         skipMeta();
         assertByte(BOOLEAN);
         return next() == 1;
     }
 
+    /**
+     * Appends an unsigned int onto the buffer.
+     *
+     * @param uint The value to append.
+     * @return The current buffer instance.
+     */
     public PacketBuffer putUInt(long uint) {
         safePut(U_INT,
                 (byte) (uint >> 24), (byte) ((uint >> 16) & MASK), (byte) ((uint >> 8) & MASK), (byte) (uint & MASK));
         return this;
     }
 
+    /**
+     * Gets the next value on the buffer as an unsigned integer.
+     *
+     * <b>NOTE:</b> This will move the pointer forward if successful.
+     *
+     * @return The value.
+     */
     public long getUInt() {
         skipMeta();
         assertByte(U_INT);
@@ -168,10 +229,23 @@ public class PacketBuffer {
         return integer;
     }
 
+    /**
+     * Appends an int onto the buffer.
+     *
+     * @param integer The value to append.
+     * @return The current buffer instance.
+     */
     public PacketBuffer putInt(int integer) {
        return _putInt(INT, integer);
     }
 
+    /**
+     * Gets the next value on the buffer as an integer.
+     *
+     * <b>NOTE:</b> This will move the pointer forward if successful.
+     *
+     * @return The value.
+     */
     public int getInt() {
         return _getInt(INT);
     }
@@ -206,34 +280,86 @@ public class PacketBuffer {
         return val;
     }
 
+    /**
+     * Appends an unsigned long onto the buffer.
+     *
+     * @param ulong The value to append.
+     * @return The current buffer instance.
+     */
     public PacketBuffer putULong(long ulong) {
         return _putLong(U_LONG, ulong);
     }
 
+    /**
+     * Gets the next value on the buffer as an unsigned long.
+     *
+     * <b>NOTE:</b> This will move the pointer forward if successful.
+     *
+     * @return The value.
+     */
     public long getULong() {
         return _getLong(U_LONG);
     }
 
+    /**
+     * Appends a long onto the buffer.
+     *
+     * @param longVal The value to append.
+     * @return The current buffer instance.
+     */
     public PacketBuffer putLong(long longVal) {
         return _putLong(LONG, longVal);
     }
 
+    /**
+     * Gets the next value on the buffer as a long.
+     *
+     * <b>NOTE:</b> This will move the pointer forward if successful.
+     *
+     * @return The value.
+     */
     public long getLong() {
         return _getLong(LONG);
     }
 
+    /**
+     * Appends a character onto the buffer.
+     *
+     * @param character The value to append.
+     * @return The current buffer instance.
+     */
     public PacketBuffer putChar(char character) {
         return _putInt(CHAR, (int) character);
     }
-    
+
+    /**
+     * Gets the next value on the buffer as a character.
+     *
+     * <b>NOTE:</b> This will move the pointer forward if successful.
+     *
+     * @return The value.
+     */
     public char getChar() {
         return (char) _getInt(CHAR);
     }
 
+    /**
+     * Appends a decimal value onto the buffer.
+     *
+     * @param value The value to append.
+     * @return The current buffer instance.
+     */
     public PacketBuffer putDecimal(double value) {
         return _putLong(DECIMAL, Double.doubleToLongBits(value));
     }
 
+    /**
+     * Gets the next value on the buffer as a decimal value.
+     *
+     * <b>NOTE:</b> This will move the pointer forward if successful.
+     *
+     * @return The value.
+     */
     public double getDecimal() {
         return Double.longBitsToDouble(_getLong(DECIMAL));
     }
@@ -242,6 +368,12 @@ public class PacketBuffer {
         _putInt(ARRAY, len);
     }
 
+    /**
+     * Appends an array onto the buffer.
+     *
+     * @param array The value to append.
+     * @return The current buffer instance.
+     */
     public PacketBuffer putArray(boolean[] array) {
         _startPutArray(array.length);
         for (boolean o : array)
@@ -249,6 +381,12 @@ public class PacketBuffer {
         return this;
     }
 
+    /**
+     * Appends an array onto the buffer.
+     *
+     * @param array The value to append.
+     * @return The current buffer instance.
+     */
     public PacketBuffer putArray(int[] array) {
         _startPutArray(array.length);
         for (int o : array)
@@ -256,6 +394,12 @@ public class PacketBuffer {
         return this;
     }
 
+    /**
+     * Appends an array onto the buffer.
+     *
+     * @param array The value to append.
+     * @return The current buffer instance.
+     */
     public PacketBuffer putArray(long[] array) {
         _startPutArray(array.length);
         for (long o : array)
@@ -263,6 +407,12 @@ public class PacketBuffer {
         return this;
     }
 
+    /**
+     * Appends an array onto the buffer.
+     *
+     * @param array The value to append.
+     * @return The current buffer instance.
+     */
     public PacketBuffer putArray(char[] array) {
         _startPutArray(array.length);
         for (char o : array)
@@ -270,6 +420,12 @@ public class PacketBuffer {
         return this;
     }
 
+    /**
+     * Appends an array onto the buffer.
+     *
+     * @param array The value to append.
+     * @return The current buffer instance.
+     */
     public PacketBuffer putArray(double[] array) {
         _startPutArray(array.length);
         for (double o : array)
@@ -277,6 +433,12 @@ public class PacketBuffer {
         return this;
     }
 
+    /**
+     * Appends an array onto the buffer.
+     *
+     * @param array The value to append.
+     * @return The current buffer instance.
+     */
     public <T> PacketBuffer putArray(T[] array) {
         _startPutArray(array.length);
         for (T o : array)
@@ -284,6 +446,12 @@ public class PacketBuffer {
         return this;
     }
 
+    /**
+     * Appends an array onto the buffer.
+     *
+     * @param collection The value to append.
+     * @return The current buffer instance.
+     */
     public <T> PacketBuffer putArray(Collection<T> collection) {
         _startPutArray(collection.size());
         for (T o : collection)
@@ -291,6 +459,13 @@ public class PacketBuffer {
         return this;
     }
 
+    /**
+     * Gets the next value on the buffer as an array.
+     *
+     * <b>NOTE:</b> This will move the pointer forward if successful.
+     *
+     * @return The value.
+     */
     public Object[] getArray() { //Generics + java arrays don't work well together :(
         int len = _getInt(ARRAY);
         Object[] array = new Object[len];
@@ -299,6 +474,12 @@ public class PacketBuffer {
         return array;
     }
 
+    /**
+     * Appends a string onto the buffer.
+     *
+     * @param string The value to append.
+     * @return The current buffer instance.
+     */
     public PacketBuffer putStr(String string) {
         byte[] data;
         try {
@@ -312,6 +493,13 @@ public class PacketBuffer {
         return this;
     }
 
+    /**
+     * Gets the next value on the buffer as a string.
+     *
+     * <b>NOTE:</b> This will move the pointer forward if successful.
+     *
+     * @return The value.
+     */
     public String getStr() {
         int len = _getInt(STR);
         byte[] bytes = nextBytes(len);
@@ -323,17 +511,35 @@ public class PacketBuffer {
         }
     }
 
+    /**
+     * Appends a nil value onto the buffer.
+     *
+     * @return The current buffer instance.
+     */
     public PacketBuffer putNil() {
         safePut(NIL);
         return this;
     }
 
+    /**
+     * Gets the next value on the buffer as a nil.
+     *
+     * <b>NOTE:</b> This will move the pointer forward if successful.
+     *
+     * @return The value.
+     */
     public void getNil() {
         skipMeta();
         assertByte(NIL);
         next();
     }
 
+    /**
+     * Appends an map onto the buffer.
+     *
+     * @param map The value to append.
+     * @return The current buffer instance.
+     */
     public <K, V> PacketBuffer putMap(Map<K, V> map) {
         _putInt(MAP, map.size());
         for (Map.Entry<K, V> entry : map.entrySet()) {
@@ -343,6 +549,13 @@ public class PacketBuffer {
         return this;
     }
 
+    /**
+     * Gets the next value on the buffer as a map and inserts it into the provided mutable map.
+     *
+     * <b>NOTE:</b> This will move the pointer forward if successful.
+     *
+     * @return The value.
+     */
     public <K, V> Map<K, V> getMap(Map<K, V> mutableMap) {
         int len = _getInt(MAP);
         for (int i = 0; i < len; i++)
@@ -350,14 +563,33 @@ public class PacketBuffer {
         return mutableMap;
     }
 
+    /**
+     * Gets the next value on the buffer as a map.
+     *
+     * <b>NOTE:</b> This will move the pointer forward if successful.
+     *
+     * @return The value.
+     */
     public Map getMap() {
         return getMap(new HashMap<>());
     }
 
+    /**
+     * Appends an arbitrary object onto the buffer.
+     *
+     * @param object The value to append.
+     * @return The current buffer instance.
+     */
     public PacketBuffer put(Object object) {
         return put(object, false);
     }
-
+    /**
+     * Appends an arbitrary object onto the buffer.
+     *
+     * @param object The value to append.
+     * @param preferUnsigned When true, this will use unsigned types when possible.
+     * @return The current buffer instance.
+     */
     public PacketBuffer put(Object object, boolean preferUnsigned) {
         if (object == null)
             putNil();
@@ -416,6 +648,13 @@ public class PacketBuffer {
         return this;
     }
 
+    /**
+     * Gets the next value on the buffer.
+     *
+     * <b>NOTE:</b> This will move the pointer forward if successful.
+     *
+     * @return The value.
+     */
     public Object getNext() {
         skipMeta();
         switch (peek()) {
@@ -456,14 +695,27 @@ public class PacketBuffer {
         movePointer(1);
     }
 
+    /**
+     * Moves the pointer to a specified position.
+     *
+     * @param newPosition The new position that the pointer should point to in the buffer.
+     */
     public synchronized void movePointer(int newPosition) {
         pointer = newPosition;
     }
 
+    /**
+     * Gets the current size of the buffer.
+     *
+     * @return The buffer size.
+     */
     public int size() {
         return pointer;
     }
 
+    /**
+     * Resets the contents of the buffer.
+     */
     public void reset() {
         movePointer(0);
     }
@@ -476,6 +728,11 @@ public class PacketBuffer {
         buf[5] = (byte) (size & MASK);
     }
 
+    /**
+     * Flushes the contents of this buffer into a byte array and resets the contents.
+     *
+     * @return The current buffer contents.
+     */
     public byte[] flush() {
         updateSize();
         //Don't need to worry about zeroing, the data will be overwritten eventually.

@@ -18,6 +18,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
+/**
+ * This handles client side communication to an Introverted server.
+ *
+ * Client side = observer/mutator of a running process (not necessarily the process itself).
+ */
 public class IntrovertedClient implements PacketHandler {
 
     private static final int DISCOVERY_TIMEOUT_MS = 5; //Local servers should face no latency, so we are technically being generous
@@ -27,6 +32,15 @@ public class IntrovertedClient implements PacketHandler {
     private final ExecutorService readService = Executors.newSingleThreadExecutor();
     private volatile boolean isClosed = false;
 
+    /**
+     * This will attempt to search for local Introverted servers which are running through TCP.
+     *
+     * <b>This can take awhile when bounds have a high range!</b>
+     *
+     * @param lowerBound The lower port bound (this should be greater than zero!).
+     * @param upperBound The higher port bound (this should be less than or equal to 9999!).
+     * @return The list of found servers with description pairs (left = platform identifier, right = port).
+     */
     public static List<Pair<String, Integer>> findTCPServers(int lowerBound, int upperBound) {
         List<Pair<String, Integer>> foundServers = new ArrayList<>();
         for (int i = lowerBound; i <= upperBound; i++) {
@@ -40,10 +54,25 @@ public class IntrovertedClient implements PacketHandler {
         return foundServers;
     }
 
+    /**
+     * Attempts to search for local Introverted servers running through TCP from the port 0001 to 9999.
+     *
+     * <b>This is likely to take awhile so it is not recommended! If you have to search, do some manual heuristics!</b>
+     *
+     * @return The list of found servers with description pairs (left = platform identifier, right = port).
+     */
     public static List<Pair<String, Integer>> findTCPServers() {
         return findTCPServers(1, 9999);
     }
 
+    /**
+     * Attempts to search for local Introverted servers running through unix sockets (AF_UNIX).
+     *
+     * <b>This expects servers to have an address located in in the /tmp/ directory, contains the string 'introverted'
+     * and ends with '.sock'</b>
+     *
+     * @return The list of found servers with description pairs (left = platform identifier, right = address).
+     */
     public static List<Pair<String, String>> findUnixServers() {
         File tmpDir = new File("/tmp/");
         String[] sockets = tmpDir.list((dir, name) -> dir.getName().equals("/tmp/") && name.contains("introverted") && name.endsWith(".sock"));
@@ -64,17 +93,27 @@ public class IntrovertedClient implements PacketHandler {
         return foundServers;
     }
 
+    /**
+     * This creates a client which attempts to make a TCP connection to an Introverted server.
+     *
+     * @param serverPort The port of the server.
+     */
     public IntrovertedClient(int serverPort) {
         socket = PacketSocket.wrap(SocketFactory.newTCPSocket(serverPort));
         _completeInit();
     }
 
+    /**
+     * This creates a client which attempts to make a unix socket (AF_UNIX) connection to an Introverted server.
+     *
+     * @param unixSocketAddress The socket address of the server.
+     */
     public IntrovertedClient(String unixSocketAddress) {
         socket = PacketSocket.wrap(SocketFactory.newUnixSocket(unixSocketAddress));
         _completeInit();
     }
 
-    private void _completeInit() {
+    private void _completeInit() { //Bootstrap socket listener and base consumer
         readService.execute(() -> {
             while (!isClosed()) {
                 try {
@@ -90,6 +129,14 @@ public class IntrovertedClient implements PacketHandler {
         handle(new ClientBasePacketConsumer(this));
     }
 
+    /**
+     * This initiates the required handshake process for the client to complete its connection attempt to a server.
+     *
+     * @return An optional, the optional should be empty if the handshake was successful, otherwise it'll contain the
+     * reason for it failing.
+     *
+     * @throws InterruptedException
+     */
     public synchronized Optional<String> handshake() throws InterruptedException {
         Packet packet = exchange(new HandshakePacket(),
                 p -> p.getType() == PacketType.HANDSHAKE_CONFIRM || p.getType() == PacketType.HANDSHAKE_REFUSE,

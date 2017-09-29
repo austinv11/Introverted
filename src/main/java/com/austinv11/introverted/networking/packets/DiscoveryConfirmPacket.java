@@ -5,6 +5,9 @@ import com.austinv11.introverted.mapping.Serialized;
 import com.austinv11.introverted.networking.Packet;
 import com.austinv11.introverted.networking.PacketType;
 
+/**
+ * This is sent by the server in response to a {@link DiscoveryPacket}.
+ */
 public class DiscoveryConfirmPacket extends Packet {
 
     @Serialized
@@ -20,6 +23,11 @@ public class DiscoveryConfirmPacket extends Packet {
         this.platform = platform;
     }
 
+    /**
+     * The platform identifier for the server.
+     *
+     * @return The platform identifier (i.e. 'JVM-light').
+     */
     public String getPlatformIdentifier() {
         return platform;
     }

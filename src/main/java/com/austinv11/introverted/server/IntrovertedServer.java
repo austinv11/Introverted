@@ -13,6 +13,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
+/**
+ * This handles server side communication to an Introverted client for the JVM-light platform.
+ *
+ * Server side = dispatcher/receiver of events/mutations..
+ */
 public class IntrovertedServer implements PacketHandler {
 
     public static final String JVM_LIGHT_PLATFORM = "JVM-light";
@@ -23,17 +28,30 @@ public class IntrovertedServer implements PacketHandler {
     private final Map<PacketSocket, ExecutorService> connections = Collections.synchronizedMap(new HashMap<>());
     private volatile boolean isClosed = false;
 
+    /**
+     * Creates an Introverted server via TCP.
+     *
+     * @param port The port to host the server on.
+     */
     public IntrovertedServer(int port) {
         serverSocket = PacketServerSocket.wrap(SocketFactory.newTCPServerSocket(port));
         _completeInit();
     }
 
+    /**
+     * Creates an Introverted server via a unix socket.
+     *
+     * @param unixSocketAddress The socket address.
+     *
+     * @see SocketFactory#supportsUnixSockets()
+     * @see SocketFactory#generateUnixSocketAddress()
+     */
     public IntrovertedServer(String unixSocketAddress) {
         serverSocket = PacketServerSocket.wrap(SocketFactory.newUnixServerSocket(unixSocketAddress));
         _completeInit();
     }
 
-    private void _completeInit() {
+    private void _completeInit() { //Bootstrap socket listeners and base consumer
         connectionService.execute(() -> {
             while (!isClosed()) {
                 PacketSocket socket = serverSocket.accept();

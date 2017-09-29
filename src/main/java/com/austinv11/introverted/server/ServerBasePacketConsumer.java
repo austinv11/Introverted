@@ -9,6 +9,9 @@ import com.austinv11.introverted.networking.packets.HandshakeConfirmPacket;
 import com.austinv11.introverted.networking.packets.HandshakePacket;
 import com.austinv11.introverted.networking.packets.HandshakeRefusePacket;
 
+/**
+ * {@link BasePacketConsumer} implementation for server side operations.
+ */
 public class ServerBasePacketConsumer extends BasePacketConsumer {
 
     public ServerBasePacketConsumer(PacketHandler handler) {

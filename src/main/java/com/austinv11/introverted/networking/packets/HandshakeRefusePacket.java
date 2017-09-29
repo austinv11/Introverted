@@ -5,6 +5,9 @@ import com.austinv11.introverted.mapping.Serialized;
 import com.austinv11.introverted.networking.Packet;
 import com.austinv11.introverted.networking.PacketType;
 
+/**
+ * This is sent by the server to the client in order to refuse a connection attempt by a client.
+ */
 public class HandshakeRefusePacket extends Packet {
 
     @Serialized
@@ -20,6 +23,11 @@ public class HandshakeRefusePacket extends Packet {
         this.reason = reason;
     }
 
+    /**
+     * The human-readable reason for the rejection.
+     *
+     * @return The reason string.
+     */
     public String getReason() {
         return reason;
     }

@@ -8,16 +8,31 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 
+/**
+ * This represents a psuedo-InputStream which can be used to read incoming packets from.
+ */
 public class PacketInputStream implements Closeable {
 
     private static final int BUFFER_SIZE = 512;
 
     private final InputStream backing;
 
+    /**
+     * Wraps the true input stream to read through.
+     *
+     * @param backing The backing input stream.
+     */
     public PacketInputStream(InputStream backing) {
         this.backing = backing;
     }
 
+    /**
+     * Blocks until the next packet is received, at which point the packet is decoded.
+     *
+     * @return The packet read or null if the stream was terminated.
+     *
+     * @throws IOException
+     */
     public Packet read() throws IOException {
         byte[] buffer = new byte[BUFFER_SIZE];
         int len = backing.read(buffer, 0, 6);

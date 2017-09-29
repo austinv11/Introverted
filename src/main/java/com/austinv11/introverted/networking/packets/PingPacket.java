@@ -5,6 +5,9 @@ import com.austinv11.introverted.mapping.Serialized;
 import com.austinv11.introverted.networking.Packet;
 import com.austinv11.introverted.networking.PacketType;
 
+/**
+ * This is sent by any side in order to ensure that a connection is still alive.
+ */
 public class PingPacket extends Packet {
 
     @Serialized(unsigned = true)
@@ -15,10 +18,20 @@ public class PingPacket extends Packet {
         identifier = System.currentTimeMillis();
     }
 
+    /**
+     * A unique identifier to discriminate between multiple ping pongs.
+     *
+     * @return The unique identifier.
+     */
     public long getIdentifier() {
         return identifier;
     }
 
+    /**
+     * This gets the time the ping was sent in epoch milliseconds.
+     *
+     * @return The send time.
+     */
     public long getSendTime() {
         return identifier;
     }

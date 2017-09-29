@@ -9,6 +9,12 @@ import com.austinv11.introverted.networking.packets.PongPacket;
 import java.io.IOException;
 import java.util.function.Consumer;
 
+/**
+ * This class is used to centralize default packet handling.
+ *
+ * This base class, specifically, implements side-agnostic aspects of packet handling (dealing with ping pongs for
+ * example).
+ */
 public abstract class BasePacketConsumer implements Consumer<Packet> {
 
     private final PacketHandler handler;
@@ -32,6 +38,10 @@ public abstract class BasePacketConsumer implements Consumer<Packet> {
             handle(packet);
     }
 
+    /**
+     * This is called to signal for a packet to be handled.
+     * @param packet
+     */
     public abstract void handle(Packet packet);
 
     public PacketHandler getHandler() {

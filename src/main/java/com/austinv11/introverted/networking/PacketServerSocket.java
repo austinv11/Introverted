@@ -6,16 +6,36 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.ServerSocket;
 
+/**
+ * Represents a common interface for any backing communication method.
+ */
 public interface PacketServerSocket extends Closeable {
 
+    /**
+     * Creates a packet server socket which transports via unix sockets.
+     *
+     * @param socket The unix socket to use.
+     * @return The new, wrapped implementation of the server socket.
+     */
     static PacketServerSocket wrap(UnixServerSocket socket) {
         return new UnixPacketServerSocket(socket);
     }
 
+    /**
+     * Creates a packet server socket which transports via tcp sockets.
+     *
+     * @param socket The tcp socket to use.
+     * @return The new, wrapped implementation of the server socket.
+     */
     static PacketServerSocket wrap(ServerSocket socket) {
         return new TCPPacketServerSocket(socket);
     }
 
+    /**
+     * This blocks until a connection is attempted to this server socket.
+     *
+     * @return The socket representing the connection accepted.
+     */
     PacketSocket accept();
 }
 

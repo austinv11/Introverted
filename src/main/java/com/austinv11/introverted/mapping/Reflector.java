@@ -1,7 +1,5 @@
 package com.austinv11.introverted.mapping;
 
-import com.austinv11.introverted.networking.Packet;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -9,18 +7,50 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Common abstraction for different methods of reflecting within Java. This is meant as a utility to allow for platform
+ * specific optimizations.
+ */
 public interface Reflector {
 
+    /**
+     * Gets the singleton implementation of {@link Reflector}.
+     *
+     * @param overrideIsUnsafeAvailable Setting this to true forces {@link sun.misc.Unsafe} usage, false forces
+     *                                  plain Java reelection usage.
+     * @return The (possibly cached) implementation of {@link Reflector}.
+     */
     static Reflector instance(boolean overrideIsUnsafeAvailable) {
         return overrideIsUnsafeAvailable ? UnsafeReflector.instance() : ReflectionReflector.instance();
     }
 
+    /**
+     * Gets the singleton implementation of {@link Reflector}. This will automatically attempt to find the best
+     * implementation for the current platform.
+     *
+     * @return The (possibly cached) implementation of {@link Reflector}.
+     */
     static Reflector instance() {
         return instance(UnsafeReflector.isUnsafeAvailable());
     }
 
+    /**
+     * Gets the value of a field.
+     *
+     * @param clazz The class to get the value from.
+     * @param obj The instance containing the value.
+     * @param name The name of the field to get the value from.
+     * @return The value of the field.
+     */
     <T> T get(Class<?> clazz, Object obj, String name);
 
+    /**
+     * Gets the fields present in a class.
+     *
+     * @param clazz The class to scan for fields.
+     * @param annotationFilter The annotation returned fields must contained.
+     * @return The fields found.
+     */
     default List<Field> getFields(Class<?> clazz, Class<? extends Annotation> annotationFilter) {
         Field[] fields = clazz.getDeclaredFields();
         List<Field> fieldList = new ArrayList<>();
@@ -31,6 +61,13 @@ public interface Reflector {
         return fieldList;
     }
 
+    /**
+     * Gets a {@link Field} instance for a field name.
+     *
+     * @param clazz The class to search for the field from.
+     * @param name The name of the field to search for.
+     * @return The field found.
+     */
     default Field getField(Class<?> clazz, String name) {
         while (!clazz.equals(Object.class)) {
             try {
@@ -48,8 +85,22 @@ public interface Reflector {
         return null;
     }
 
+    /**
+     * This puts a value into a field.
+     *
+     * @param clazz The class the field belongs to.
+     * @param obj The specific instance to insert the value of the field into.
+     * @param name The name of the field to mutate.
+     * @param value The new value for the field.
+     */
     <T> void put(Class<?> clazz, Object obj, String name, T value);
 
+    /**
+     * This attempts to generate a new primitive with its default value from a primitive (or wrapper) class..
+     *
+     * @param type The primitive type.
+     * @return The primitive value.
+     */
     default <T> T instantiatePrimitive(Class<T> type) {
         if (int.class.equals(type) || Integer.class.equals(type)) {
             return (T)(Integer) 0;
@@ -78,6 +129,12 @@ public interface Reflector {
         return null;
     }
 
+    /**
+     * Instantiates a new instance of the provided class.
+     *
+     * @param type The class to instantiate.
+     * @return The new instance of the class.
+     */
     <T> T instantiate(Class<T> type);
 }
 

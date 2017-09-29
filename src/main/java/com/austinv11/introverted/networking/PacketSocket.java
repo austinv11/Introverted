@@ -7,8 +7,17 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.Socket;
 
+/**
+ * Represents a common interface for any backing communication method.
+ */
 public interface PacketSocket extends Closeable {
 
+    /**
+     * Creates a packet socket which transports via unix sockets.
+     *
+     * @param socket The unix socket to use.
+     * @return The new, wrapped implementation of the socket.
+     */
     static PacketSocket wrap(UnixSocket socket) {
         try {
             return new UnixPacketSocket(socket);
@@ -17,6 +26,12 @@ public interface PacketSocket extends Closeable {
         }
     }
 
+    /**
+     * Creates a packet socket which transports via TCP sockets.
+     *
+     * @param socket The unix socket to use.
+     * @return The new, wrapped implementation of the socket.
+     */
     static PacketSocket wrap(Socket socket) {
         try {
             return new TCPPacketSocket(socket);
@@ -25,10 +40,25 @@ public interface PacketSocket extends Closeable {
         }
     }
 
+    /**
+     * Gets the address of the socket. Either "localhost:$port" for tcp or the path to the unix socket.
+     *
+     * @return The address.
+     */
     String getAddress();
 
+    /**
+     * Gets the socket's input stream.
+     *
+     * @return The packet input stream.
+     */
     PacketInputStream getInputStream();
 
+    /**
+     * Gets the socket's output stream.
+     *
+     * @return The packet output stream.
+     */
     PacketOutputStream getOutputStream();
 }
 
