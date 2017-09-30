@@ -4,13 +4,14 @@ import com.austinv11.introverted.common.Introverted;
 import com.austinv11.introverted.mapping.Serialized;
 import com.austinv11.introverted.networking.Packet;
 import com.austinv11.introverted.networking.PacketType;
+import com.austinv11.introverted.networking.TraceablePacket;
 
 /**
  * This is sent by the server in response to a {@link DiscoveryPacket}.
  */
-public class DiscoveryConfirmPacket extends Packet {
+public class DiscoveryConfirmPacket extends TraceablePacket {
 
-    @Serialized
+    @Serialized(0)
     private final String platform;
 
     DiscoveryConfirmPacket() {
@@ -18,8 +19,8 @@ public class DiscoveryConfirmPacket extends Packet {
         platform = null;
     }
 
-    public DiscoveryConfirmPacket(String platform) {
-        super(Introverted.VERSION, PacketType.DISCOVERY_CONFIRM);
+    public DiscoveryConfirmPacket(String platform, long id) {
+        super(Introverted.VERSION, PacketType.DISCOVERY_CONFIRM, id);
         this.platform = platform;
     }
 

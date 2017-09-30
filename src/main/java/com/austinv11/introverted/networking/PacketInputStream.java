@@ -81,7 +81,7 @@ public class PacketInputStream implements Closeable {
         } catch (Throwable t) {
             t.printStackTrace();
         }
-        for (Field field : reflector.getFields(type.getType(), Serialized.class))
+        for (Field field : reflector.getSerializedFields(type.getType()))
             reflector.put(type.getType(), packet, field.getName(), buf.getNext());
 
         return packet;

@@ -1,10 +1,13 @@
 package com.austinv11.introverted.mapping;
 
+import com.austinv11.introverted.networking.Packet;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -45,19 +48,21 @@ public interface Reflector {
     <T> T get(Class<?> clazz, Object obj, String name);
 
     /**
-     * Gets the fields present in a class.
+     * Gets the fields present in a class with the {@link Serialized} annotation.
      *
      * @param clazz The class to scan for fields.
-     * @param annotationFilter The annotation returned fields must contained.
      * @return The fields found.
      */
-    default List<Field> getFields(Class<?> clazz, Class<? extends Annotation> annotationFilter) {
-        Field[] fields = clazz.getDeclaredFields();
+    default List<Field> getSerializedFields(Class<?> clazz) {
         List<Field> fieldList = new ArrayList<>();
-        for (Field field : fields) {
-            if (field.isAnnotationPresent(annotationFilter))
-                fieldList.add(field);
+        while (!clazz.equals(Packet.class) && !clazz.equals(Object.class)) {
+            for (Field field : clazz.getDeclaredFields()) {
+                if (field.isAnnotationPresent(Serialized.class))
+                    fieldList.add(field);
+            }
+            clazz = clazz.getSuperclass();
         }
+        fieldList.sort(Comparator.comparingInt(f -> f.getAnnotation(Serialized.class).value()));
         return fieldList;
     }
 
@@ -73,12 +78,9 @@ public interface Reflector {
             try {
                 return clazz.getDeclaredField(name);
             } catch (NoSuchFieldException e) {
-                try {
-                    return clazz.getField(name);
-                } catch (NoSuchFieldException e1) {
-                } finally {
-                    clazz = clazz.getSuperclass();
-                }
+            }
+            finally {
+                clazz = clazz.getSuperclass();
             }
         }
 

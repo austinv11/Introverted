@@ -11,6 +11,11 @@ reserved protocol op or it can be a platform specific opcode. After the op code 
 length header which represents an integer describing the length of the raw payload. And
 the final bytes represent the payload which is dependent on the op type.
 
+### Traceable packets
+The protocol has a concept of "traceable" packets in that if an op is traceable, it must
+contain a ulong as its first payload type which represents an arbitrary and unique id which
+is then sent along with a responding packet, allowing for proper callbacks over the wire.
+
 ## Network flow
 A client can search for running servers by sending a `DISCOVERY` op to all ports and waiting
 for a `DISCOVERY_CONFIRM` op in return to signal that there is a running server in the 
@@ -32,16 +37,16 @@ code, by convention a `0` exit code is normal and a non-zero exit code is abnorm
 ## Reserved protocol ops
 These are ops which are platform agnostic and guaranteed to always be implemented.
 
-|op code|operation|payload_type|sending side|
-|-------|---------|------------|------------|
-|0|DISCOVERY|none|client|
-|1|DISCOVERY_CONFIRM|str|server|
-|2|HANDSHAKE|none|client|
-|3|HANDSHAKE_CONFIRM|none|server|
-|4|HANDSHAKE_REFUSE|str|server|
-|5|PING|ulong|client/server|
-|6|PONG|ulong|client/server|
-|7|CONNECTION_KILLED|int|client/server|
+|op code|operation|payload type|sending side|traceable|response op (if applicable)|
+|-------|---------|------------|------------|---------|---------------------------|
+|0|DISCOVERY|ulong|client|✓|DISCOVERY_CONFIRM|
+|1|DISCOVERY_CONFIRM|ulong, str|server|✓|n/a|
+|2|HANDSHAKE|ulong|client|✓|HANDSHAKE_CONFIRM/HANDSHAKE_REFUSE|
+|3|HANDSHAKE_CONFIRM|ulong|server|✓|n/a|
+|4|HANDSHAKE_REFUSE|ulong,str|server|✓|n/a|
+|5|PING|ulong|client/server|✓|PONG|
+|6|PONG|ulong, ulong|client/server|✓|n/a|
+|7|CONNECTION_KILLED|int|client/server|✘|n/a|
 
 ## Reserved data type formats
 These are data types which are platform agnostic and guaranteed to always be implemented.

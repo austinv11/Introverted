@@ -27,7 +27,7 @@ public abstract class BasePacketConsumer implements Consumer<Packet> {
     public void accept(Packet packet) {
         //Handle common packet handling here
         if (packet.getType() == PacketType.PING)
-            handler.send(new PongPacket(((PingPacket) packet).getIdentifier()));
+            handler.send(new PongPacket(((PingPacket) packet).getId()));
         else if (packet.getType() == PacketType.CONNECTION_KILLED)
             try {
                 handler.close();

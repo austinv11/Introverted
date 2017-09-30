@@ -8,9 +8,9 @@ import com.austinv11.introverted.mapping.Serialized;
 public abstract class Packet {
 
     //Special cases exist for these two fields but I am marking them for consistency sake
-    @Serialized
+    @Serialized(0)
     private final byte version;
-    @Serialized
+    @Serialized(1)
     private final PacketType type;
 
     public Packet() {

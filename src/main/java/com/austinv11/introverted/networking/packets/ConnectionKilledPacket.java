@@ -10,7 +10,7 @@ import com.austinv11.introverted.networking.PacketType;
  */
 public class ConnectionKilledPacket extends Packet {
 
-    @Serialized
+    @Serialized(0)
     private final int exitCode;
 
     ConnectionKilledPacket() {

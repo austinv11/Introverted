@@ -130,56 +130,28 @@ public interface PacketHandler extends Closeable {
      * This facilitates a packet exchange (sends a packet, then immediately waits for its response).
      *
      * @param sending The packet to send.
-     * @param selector The predicate to determine the packet expected to be returned.
      * @param timeout The amount of time to wait before forcibly interrupting the blocking.
      * @param timeoutUnit The unit which the timeout represents.
      * @return The response from the server.
      *
      * @throws InterruptedException
      */
-    default Packet exchange(Packet sending, Predicate<Packet> selector, long timeout, TimeUnit timeoutUnit) throws InterruptedException {
-        return Support.waitFor(this, selector, timeout, timeoutUnit, () -> send(sending));
+    default TraceablePacket exchange(TraceablePacket sending, long timeout, TimeUnit timeoutUnit) throws InterruptedException {
+        return (TraceablePacket) Support.waitFor(this, p -> p instanceof TraceablePacket && ((TraceablePacket) p).getId() == sending.getId(), timeout, timeoutUnit, () -> send(sending));
     }
 
     /**
      * This facilitates a packet exchange (sends a packet, then immediately waits for its response).
      *
      * @param sending The packet to send.
-     * @param selector The predicate to determine the packet expected to be returned.
      * @return The response from the server.
      */
-    default Packet exchange(Packet sending, Predicate<Packet> selector) {
+    default <T extends TraceablePacket> T exchange(TraceablePacket sending) {
         try {
-            return exchange(sending, selector, -1, TimeUnit.MILLISECONDS);
+            return (T) exchange(sending, -1, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
-            return null; //This should never happen
+            throw new RuntimeException(e);
         }
-    }
-
-    /**
-     * This facilitates a packet exchange (sends a packet, then immediately waits for its response).
-     *
-     * @param sending The packet to send.
-     * @param type The type of packet expected to receive in return.
-     * @param timeout The amount of time to wait before forcibly interrupting the blocking.
-     * @param timeoutUnit The unit which the timeout represents.
-     * @return The response from the server.
-     *
-     * @throws InterruptedException
-     */
-    default <T extends Packet> T exchange(Packet sending, PacketType type, long timeout, TimeUnit timeoutUnit) throws InterruptedException {
-        return (T) exchange(sending, p -> p.getType() == type, timeout, timeoutUnit);
-    }
-
-    /**
-     * This facilitates a packet exchange (sends a packet, then immediately waits for its response).
-     *
-     * @param sending The packet to send.
-     * @param type The type of packet expected to receive in return.
-     * @return The response from the server.
-     */
-    default <T extends Packet> T exchange(Packet sending, PacketType type) {
-        return (T) exchange(sending, p -> p.getType() == type);
     }
 
     /**
@@ -189,7 +161,7 @@ public interface PacketHandler extends Closeable {
      */
     default long pollPing() {
         PingPacket pingPacket = new PingPacket();
-        PongPacket pongPacket = (PongPacket) exchange(pingPacket, packet -> packet.getType() == PacketType.PONG && ((PongPacket) packet).getIdentifier() == pingPacket.getIdentifier());
+        PongPacket pongPacket = exchange(pingPacket);
         return System.currentTimeMillis() - pingPacket.getSendTime();
     }
 

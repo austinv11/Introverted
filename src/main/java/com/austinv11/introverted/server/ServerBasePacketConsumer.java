@@ -4,6 +4,7 @@ import com.austinv11.introverted.common.BasePacketConsumer;
 import com.austinv11.introverted.common.Introverted;
 import com.austinv11.introverted.networking.Packet;
 import com.austinv11.introverted.networking.PacketHandler;
+import com.austinv11.introverted.networking.TraceablePacket;
 import com.austinv11.introverted.networking.packets.DiscoveryConfirmPacket;
 import com.austinv11.introverted.networking.packets.HandshakeConfirmPacket;
 import com.austinv11.introverted.networking.packets.HandshakePacket;
@@ -22,15 +23,16 @@ public class ServerBasePacketConsumer extends BasePacketConsumer {
     public void handle(Packet packet) {
         switch (packet.getType()) {
             case DISCOVERY:
-                getHandler().send(new DiscoveryConfirmPacket(IntrovertedServer.JVM_LIGHT_PLATFORM));
+                getHandler().send(new DiscoveryConfirmPacket(IntrovertedServer.JVM_LIGHT_PLATFORM, ((TraceablePacket) packet).getId()));
                 break;
             case HANDSHAKE:
                 HandshakePacket handshakePacket = (HandshakePacket) packet;
                 if (handshakePacket.getProtocolVersion() == Introverted.VERSION)
-                    getHandler().send(new HandshakeConfirmPacket());
+                    getHandler().send(new HandshakeConfirmPacket(((TraceablePacket) packet).getId()));
                 else
                     getHandler().send(new HandshakeRefusePacket(
-                            String.format("Incompatible client version (expected %s, got %s)", Introverted.VERSION, packet.getProtocolVersion())));
+                            String.format("Incompatible client version (expected %s, got %s)", Introverted.VERSION,
+                                    packet.getProtocolVersion()), ((TraceablePacket) packet).getId()));
                 break;
         }
     }

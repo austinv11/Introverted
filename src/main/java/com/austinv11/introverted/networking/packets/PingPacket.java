@@ -4,27 +4,15 @@ import com.austinv11.introverted.common.Introverted;
 import com.austinv11.introverted.mapping.Serialized;
 import com.austinv11.introverted.networking.Packet;
 import com.austinv11.introverted.networking.PacketType;
+import com.austinv11.introverted.networking.TraceablePacket;
 
 /**
  * This is sent by any side in order to ensure that a connection is still alive.
  */
-public class PingPacket extends Packet {
-
-    @Serialized(unsigned = true)
-    private final long identifier;
+public class PingPacket extends TraceablePacket {
 
     public PingPacket() {
-        super(Introverted.VERSION, PacketType.PING);
-        identifier = System.currentTimeMillis();
-    }
-
-    /**
-     * A unique identifier to discriminate between multiple ping pongs.
-     *
-     * @return The unique identifier.
-     */
-    public long getIdentifier() {
-        return identifier;
+        super(Introverted.VERSION, PacketType.PING, System.currentTimeMillis());
     }
 
     /**
@@ -33,6 +21,6 @@ public class PingPacket extends Packet {
      * @return The send time.
      */
     public long getSendTime() {
-        return identifier;
+        return getId(); //Since the id is the timestamp
     }
 }

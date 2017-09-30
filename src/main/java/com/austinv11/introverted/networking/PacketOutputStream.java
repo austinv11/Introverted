@@ -56,7 +56,7 @@ public class PacketOutputStream implements Closeable, Flushable {
      * @param packet The packet to send.
      */
     public void write(Packet packet) {
-        List<Field> fields = Reflector.instance().getFields(packet.getClass(), Serialized.class);
+        List<Field> fields = Reflector.instance().getSerializedFields(packet.getClass());
 
         if (buf.size() == 0)
             buf.putVersion();

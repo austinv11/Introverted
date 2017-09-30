@@ -46,7 +46,7 @@ public class IntrovertedClient implements PacketHandler {
         for (int i = lowerBound; i <= upperBound; i++) {
             try (IntrovertedClient tempClient = new IntrovertedClient(i)) {
                 DiscoveryConfirmPacket confirmation = (DiscoveryConfirmPacket) tempClient.exchange(new DiscoveryPacket(),
-                        packet -> packet.getType() == PacketType.DISCOVERY_CONFIRM, DISCOVERY_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+                        DISCOVERY_TIMEOUT_MS, TimeUnit.MILLISECONDS);
                 if (confirmation != null)
                     foundServers.add(Pair.of(confirmation.getPlatformIdentifier(), i));
             } catch (Throwable t) {}
@@ -82,7 +82,7 @@ public class IntrovertedClient implements PacketHandler {
                 try (IntrovertedClient tempClient = new IntrovertedClient(socket)) {
                     tempClient.send(new DiscoveryPacket());
                     DiscoveryConfirmPacket confirmation = (DiscoveryConfirmPacket) tempClient.exchange(new DiscoveryPacket(),
-                            packet -> packet.getType() == PacketType.DISCOVERY_CONFIRM, DISCOVERY_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+                            DISCOVERY_TIMEOUT_MS, TimeUnit.MILLISECONDS);
                     if (confirmation != null)
                         foundServers.add(Pair.of(confirmation.getPlatformIdentifier(), socket));
                 } catch (Throwable e) {
@@ -138,9 +138,7 @@ public class IntrovertedClient implements PacketHandler {
      * @throws InterruptedException
      */
     public synchronized Optional<String> handshake() throws InterruptedException {
-        Packet packet = exchange(new HandshakePacket(),
-                p -> p.getType() == PacketType.HANDSHAKE_CONFIRM || p.getType() == PacketType.HANDSHAKE_REFUSE,
-                DISCOVERY_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        TraceablePacket packet = exchange(new HandshakePacket(), DISCOVERY_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         if (packet.getType() == PacketType.HANDSHAKE_CONFIRM) {
             return Optional.empty();
         } else {

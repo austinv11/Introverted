@@ -16,7 +16,7 @@ public class ReflectorTest {
 
     @Test
     public void testFieldList() {
-        assertEquals(Reflector.instance().getFields(TestClass.class, Serialized.class).size(), 2);
+        assertEquals(Reflector.instance().getSerializedFields(TestClass.class).size(), 2);
     }
 
     @Test
@@ -44,9 +44,9 @@ public class ReflectorTest {
     private static class TestClass {
 
         private String nonSerialized = "hi";
-        @Serialized
+        @Serialized(0)
         private String serialized1 = "hi1";
-        @Serialized
+        @Serialized(1)
         private String serialized2 = "hi2";
 
         public TestClass() {}
